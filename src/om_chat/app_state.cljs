@@ -84,5 +84,19 @@
       ))
   )
 
-(def state {:threads  (reduce threads-by-id {} raw-data)
+(defn threads [coll msg]
+  (let [{:keys [id threadID threadName timestamp]} msg
+        {:keys [thread/id]} (last coll)
+        last-msg-idx (dec (count coll))]
+    (if (= id threadID)
+      (update-in coll [last-msg-idx :thread/messages] conj (convert-message msg))
+      (conj coll
+             {:thread/id threadID
+              :thread/name threadName
+              :thread/messages [(convert-message msg)]
+              })
+      ))
+  )
+
+(def state {:threads  (reduce threads [] raw-data)
             })

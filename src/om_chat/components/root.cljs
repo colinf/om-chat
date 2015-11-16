@@ -9,16 +9,24 @@
 (defui ChatApp
   static om/IQuery
   (query [this]
-         [:unread-count :selected-thread {:threads (om/get-query thread-item/ThreadItem)}])
+         [:selected-thread {:threads (om/get-query thread-item/ThreadItem)}])
   Object
   (render [this]
-          (dom/div #js{:className "chatapp"}
-                   (thread-section/thread-section
-                    (om/computed (om/props this)
-                                 {:on-click-thread
-                                  (fn [id] (om/transact! this
-                                                        `[(thread/select {:thread/id ~id})]))}))
-                   (msg/message-section (om/props this))
-                   )
+          (let [{:keys [selected-thread threads]} (om/props this)]
+            (println "ROOT: " (om/props this))
+            (dom/div #js{:className "chatapp"}
+                     (thread-section/thread-section
+                      (om/computed (om/props this)
+                                   {:on-click-thread
+                                    (fn [id] (om/transact! this
+                                                          `[(thread/select {:thread/id ~id})]))}))
+                     (if selected-thread
+                       (msg/message-section (om/computed (first (filter :thread/selected threads))
+                                             {:on-new-msg
+                                              (fn [thread-id msg-text]
+                                                (om/transact! this
+                                                  `[(message/new {:thread/id ~thread-id :message/text ~msg-text})])
+                                                )})))
+                     ))
           )
   )

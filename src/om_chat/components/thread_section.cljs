@@ -14,9 +14,8 @@
 (defui ThreadSection
   Object
   (render [this]
-          (let [{:keys [unread-count threads]} (om/props this)
+          (let [{:keys [threads]} (om/props this)
                 {:keys [on-click-thread]} (om/get-computed this)]
-            (println (om/props this))
             (dom/div #js{:className "thread-section"}
                      (dom/div #js{:className "thread-count"} (unread threads))
                      (apply dom/ul #js{:className "thread-list"}
