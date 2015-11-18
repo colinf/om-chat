@@ -63,7 +63,7 @@
                 }])
 
 
-(defn convert-message [{:keys [id  authorName text timestamp] :as msg}]
+(defn convert-message [{:keys [id authorName text timestamp] :as msg}]
   {:message/id id
    :message/author-name authorName
    :message/text text

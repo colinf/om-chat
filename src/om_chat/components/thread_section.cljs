@@ -12,6 +12,9 @@
   )
 
 (defui ThreadSection
+  static om/IQuery
+  (query [this]
+         {:threads (om/get-query item/ThreadItem)})
   Object
   (render [this]
           (let [{:keys [threads]} (om/props this)

@@ -1,8 +1,7 @@
 (ns om-chat.components.thread-item
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
-            [om-chat.components.message-item :as msg]
-))
+            [om-chat.components.message-section :as msg]))
 
 
 (defui ThreadItem
@@ -14,8 +13,8 @@
   (query [this]
          [:thread/id :thread/name :thread/read :thread/selected
           {:thread/last-message [:message/date :message/text]}
-          {:thread/messages (om/get-query msg/MessageItem)}
-          ])
+          (om/get-query msg/MessageSection)]
+         )
 
 
   Object

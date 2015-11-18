@@ -13,7 +13,7 @@
 (defmethod read :default
   [{:keys [state] :as env} k _]
   (let [st @state] ;; CACHING!!!
-    (println "READ :default" k env)
+;;    (println "READ :default" k env)
     (if (contains? st k)
       {:value (get st k)}
       {:remote true})))
@@ -51,7 +51,7 @@
   )
 (defmethod read :thread/selected
   [{:keys [state thread] :as env} _ _]
-  (println "READ thread/selected: " env)
+;;  (println "READ thread/selected: " env)
   (let [{:keys [selected-thread]} @state]
     (if (= selected-thread thread)
             {:value true}
@@ -68,15 +68,26 @@
   )
 
 (defmethod read :thread/messages
-  [{:keys [state query] :as env} k _]
+  [{:keys [state query current] :as env} k _]
   (let [st            @state
-        msg-selectors (:value (get-from-thread env k))
-        select-msg    #(get-in st %)
-        messages      (map select-msg msg-selectors)]
-;;    (println "READ :thread/messages: " messages)
-     (cond
-      query {:value (into [] (map #(select-keys % query) messages))}
-      :else {:value messages}))
+        msg-selectors (:value (get-from-thread env k))]
+    (if (not current)
+      {:value msg-selectors}
+      (let [select-msg    #(get-in st %)
+            messages      (map select-msg msg-selectors)]
+        (cond
+          query {:value (into [] (map #(select-keys % query) messages))}
+          :else {:value messages})))
+    )
+  )
+
+(defmethod read :current-thread
+  [{:keys [state parser query] :as env} k _]
+  (let [st         @state
+        parse-t    #(parser (assoc env :thread % :current true) query)
+        thread     (get st :selected-thread)]
+    {:value (parse-t thread)}
+    )
   )
 
 (defmulti mutate om/dispatch)
@@ -92,14 +103,17 @@
 
 (defmethod mutate 'message/new
   [{:keys [state]} _ {:keys [thread/id message/text]}]
-  (let [swapper (fn [st] (assoc-in
-                         (assoc st :selected-thread [:threads/by-id id])
-                         [:threads id :thread/read] true))
-        now     (dt/now)
-        new-msg {:message/id (str "m_" now)
+  (let [now     (dt/now)
+        msg-id  (str "m_" now)
+        new-msg {:message/id msg-id
                  :message/author-name "Bill"
                  :message/date (dt2/to-date now)
                  :message/text text
-                 :message/read true
-                 }]
-    {:action #(swap! state update-in [:threads id :thread/messages] comp new-msg)}))
+                 :message/read true}
+        swapper (fn [st]
+                  (update-in
+                   (assoc-in st [:messages/by-id msg-id] new-msg)
+                   [:threads/by-id id :thread/messages]
+                   conj [:messages/by-id msg-id]))]
+    (println id new-msg)
+    {:action #(swap! state swapper)}))

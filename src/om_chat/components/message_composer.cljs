@@ -7,7 +7,6 @@
 (def ENTER_KEY 13)
 
 (defn change [c e]
-  (println "changing " (om/props c))
   (om/update-state! c assoc
                     :edit-text (.. e -target -value)))
 
@@ -20,11 +19,14 @@
     nil))
 
 (defui MessageComposer
+  ;; static om/IQuery
+  ;; (query [this]
+  ;;        :thread/id)
   Object
   (render [this]
-          (println "MC" (om/props this))
           (let [{:keys [thread/id] :as props} (om/props this)
                 {:keys [on-new-msg]} (om/get-computed props)]
+;;            (println "RENDER composer: " props)
             (dom/textarea #js{:className "message-composer"
                               :name      "message"
                               :value     (om/get-state this :edit-text)
