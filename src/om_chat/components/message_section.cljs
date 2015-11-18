@@ -7,9 +7,7 @@
             ))
 
 (defui MessageSection
-  static om/IQueryParams
-  (params [this]
-          {:id 0})
+
   static om/IQuery
   (query [this]
          {:thread/messages (om/get-query msg/MessageItem)})
