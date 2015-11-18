@@ -13,8 +13,7 @@
   (query [this]
          [:thread/id :thread/name :thread/read :thread/selected
           {:thread/last-message [:message/date :message/text]}
-          (om/get-query msg/MessageSection)]
-         )
+          (om/get-query msg/MessageSection)])
 
 
   Object

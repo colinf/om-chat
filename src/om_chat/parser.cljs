@@ -26,17 +26,6 @@
         value      (into [] (map parse-t threads))]
     {:value value}))
 
-(defmethod read :threadsXXX
-  [{:keys [state parser query] :as env} _ _]
-  (let [threads (:threads @state)
-        get-thread (fn [thread]
-                     (let [env2 (dissoc env :query)
-                           env-with-thread (assoc env2 :thread (val thread))]
-                       {(key thread) (parser env-with-thread query)}))
-        new-threads (into {} (map get-thread threads))]
-    {:value new-threads})
-  )
-
 (defmethod read :thread/id
   [env k _]
   (get-from-thread env k)
@@ -52,7 +41,7 @@
 (defmethod read :thread/selected
   [{:keys [state thread] :as env} _ _]
 ;;  (println "READ thread/selected: " env)
-  (let [{:keys [selected-thread]} @state]
+  (let [selected-thread (:selected/thread @state)]
     (if (= selected-thread thread)
             {:value true}
             {:value false}))
@@ -68,25 +57,14 @@
   )
 
 (defmethod read :thread/messages
-  [{:keys [state query current] :as env} k _]
+  [{:keys [state query] :as env} k _]
   (let [st            @state
-        msg-selectors (:value (get-from-thread env k))]
-    (if (not current)
-      {:value msg-selectors}
-      (let [select-msg    #(get-in st %)
-            messages      (map select-msg msg-selectors)]
-        (cond
-          query {:value (into [] (map #(select-keys % query) messages))}
-          :else {:value messages})))
-    )
-  )
-
-(defmethod read :current-thread
-  [{:keys [state parser query] :as env} k _]
-  (let [st         @state
-        parse-t    #(parser (assoc env :thread % :current true) query)
-        thread     (get st :selected-thread)]
-    {:value (parse-t thread)}
+        msg-selectors (:value (get-from-thread env k))
+        select-msg    #(get-in st %)
+        messages      (map select-msg msg-selectors)]
+    (cond
+      query {:value (into [] (map #(select-keys % query) messages))}
+      :else {:value messages})
     )
   )
 
@@ -97,7 +75,7 @@
 ;;  (println "MUTATE thread/select: " @state)
   (let [swapper (fn [st]
                   (assoc-in
-                   (assoc st :selected-thread [:threads/by-id id])
+                   (assoc st :selected/thread [:threads/by-id id])
                    [:threads/by-id id :thread/read] true))]
     {:action #(swap! state swapper)}))
 
@@ -115,5 +93,5 @@
                    (assoc-in st [:messages/by-id msg-id] new-msg)
                    [:threads/by-id id :thread/messages]
                    conj [:messages/by-id msg-id]))]
-    (println id new-msg)
+;;    (println id new-msg)
     {:action #(swap! state swapper)}))

@@ -13,7 +13,7 @@
 
   Object
   (render [this]
-          (println "RENDER MessageItem: " (om/props this))
+;;          (println "RENDER MessageItem: " (om/props this))
           (let [{:keys [message/author-name message/date message/text]} (om/props this)]
             (dom/li #js{:className "message-list-item"}
                     (dom/h5 #js{:className "message-author-name"} author-name)
