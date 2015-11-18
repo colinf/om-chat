@@ -14,7 +14,8 @@
   (condp == (.-keyCode e)
     ENTER_KEY
     (let [msg-text (or (om/get-state c :edit-text) "")]
-      (on-new-msg id msg-text)
+      (if-not (= msg-text "") (on-new-msg id msg-text))
+      (om/update-state! c assoc :edit-text "")
       (doto e (.preventDefault) (.stopPropagation)))
     nil))
 
