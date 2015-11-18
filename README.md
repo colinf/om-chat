@@ -1,39 +1,27 @@
-# om-fixtures
+# Flux Chat Example in Om Next
 
-FIXME: Write a one-line description of your library/project.
+This is an [Om Next](https://github.com/omcljs/om/wiki/Quick-Start-%28om.next%29) re-creation of the [flux-chat](https://github.com/facebook/flux/tree/master/examples/flux-chat) project provided by Facebook as an example of [Flux](http://facebook.github.io/flux/), their architecture for building user interfaces with React.
 
-## Overview
+## Om Next Status
 
-FIXME: Write a paragraph about the library/project and highlight its goals.
+Om Next is a forthcoming new version of [Om](https://github.com/omcljs/om), a ClojureScript interface to React. It is currently under active development and is therefore changing rapidly.
+
+*This project is based on Om Next as per release 1.0.0-alpha22 of the Om project. Please note that it is distinctly possible that the APIs for Om Next will change in subsequent versions.*
 
 ## Setup
 
-To get an interactive development environment run:
+Clone this project and run the following command from its root directory:
 
-    lein figwheel
+    lein run -m clojure.main script/figwheel.clj
 
-and open your browser at [localhost:3449](http://localhost:3449/).
-This will auto compile and send all changes to the browser without the
-need to reload. After the compilation process is complete, you will
-get a Browser Connected REPL. An easy way to try it is:
+Then open your browser at [localhost:3449](http://localhost:3449/).
 
-    (js/alert "Am I connected?")
+## Project Status ##
 
-and you should see an alert in the browser window.
+The project fully re-creates the UI of the flux-chat example. The only known difference is that when a new message is posted to a thread, the text and time of the last message are updated in the thread list on the left side of the screen. In flux-chat they are not updated (it is only an example!) but I found that this functionality was pretty much automatically provided due to the global application state of Om Next.
 
-To clean all compiled files:
-
-    lein clean
-
-To create a production build run:
-
-    lein cljsbuild once min
-
-And open your browser in `resources/public/index.html`. You will not
-get live reloading, nor a REPL. 
+One of the purposes of flux-chat is to show how flux actions can call a Web API to retrieve/update data. This interaction with a server API is not yet represented in my Om Next project, but hopefully I will add this in due course.
 
 ## License
 
-Copyright © 2014 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
+See the file LICENSE.txt in the root directory of this project.
