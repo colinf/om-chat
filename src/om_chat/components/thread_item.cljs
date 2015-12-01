@@ -12,15 +12,12 @@
   static om/IQuery
   (query [this]
          [:thread/id :thread/name :thread/read :thread/selected
-          {:thread/last-message [:message/date :message/text]}
           (om/get-query msg/MessageSection)])
-
 
   Object
   (render [this]
-          (let [{:keys [thread/id thread/name thread/selected],
-                 {:keys [message/date message/text]} :thread/last-message}
-                (om/props this)
+          (let [{:keys [thread/id thread/name thread/selected thread/messages]} (om/props this)
+                last-message (last messages)
                 {:keys [on-click-thread]} (om/get-computed this)
                 class (cond-> "thread-list-item"
                         selected (str " active"))]
@@ -30,9 +27,9 @@
                     (dom/h5 #js{:className "thread-name"}
                             name)
                     (dom/div #js{:className "thread-time"}
-                             (.toLocaleTimeString date))
+                             (if (nil? last-message) "" (.toLocaleTimeString (:message/date last-message))))
                     (dom/div #js{:className "thread-last-message"}
-                             text)
+                             (:message/text last-message))
                     ))))
 
 (def thread-item (om/factory ThreadItem))

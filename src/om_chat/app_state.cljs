@@ -85,7 +85,7 @@
   )
 
 (defn threads [coll msg]
-  (let [{:keys [id threadID threadName timestamp]} msg
+  (let [{:keys [threadID threadName]} msg
         {:keys [thread/id]} (last coll)
         last-msg-idx (dec (count coll))]
     (if (= id threadID)

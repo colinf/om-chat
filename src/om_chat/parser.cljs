@@ -5,10 +5,13 @@
 
 (defmulti read om/dispatch)
 
-(defn get-from-thread
-  [{:keys [state thread]} k]
-  (let [thr (get-in @state thread)]
-    {:value (get thr k)}))
+(defn thread-with-derived
+  [{:keys [thread/id] :as thread} st]
+  (let [selected-id (:selected/thread st)]
+    (if (= selected-id id)
+            (assoc thread :thread/selected true)
+            thread))
+  )
 
 (defmethod read :default
   [{:keys [state] :as env} k _]
@@ -19,54 +22,11 @@
       {:remote true})))
 
 (defmethod read :threads
-  [{:keys [state parser query] :as env} k _]
-  (let [st         @state
-        parse-t    #(parser (assoc env :thread %) query)
-        threads    (get st k)
-        value      (into [] (map parse-t threads))]
-    {:value value}))
-
-(defmethod read :thread/id
-  [env k _]
-  (get-from-thread env k)
-  )
-(defmethod read :thread/name
-  [env k param]
-  (get-from-thread env k)
-  )
-(defmethod read :thread/read
-  [env k param]
-  (get-from-thread env k)
-  )
-(defmethod read :thread/selected
-  [{:keys [state thread] :as env} _ _]
-;;  (println "READ thread/selected: " env)
-  (let [selected-thread (:selected/thread @state)]
-    (if (= selected-thread thread)
-            {:value true}
-            {:value false}))
-  )
-
-(defmethod read :thread/last-message
-  [{:keys [state query] :as env} _ _]
-  (let [msg-selectors (:value (get-from-thread env :thread/messages))
-        last-message (get-in @state (last msg-selectors))]
-    (cond
-      query {:value (select-keys last-message query)}
-      :else {:value last-message}))
-  )
-
-(defmethod read :thread/messages
-  [{:keys [state query] :as env} k _]
-  (let [st            @state
-        msg-selectors (:value (get-from-thread env k))
-        select-msg    #(get-in st %)
-        messages      (map select-msg msg-selectors)]
-    (cond
-      query {:value (into [] (map #(select-keys % query) messages))}
-      :else {:value messages})
-    )
-  )
+  [{:keys [state query]} k _]
+  (let [st   @state
+        tree (om/db->tree query (get st k) st)]
+;;    (println tree)
+    {:value (into [] (map #(thread-with-derived % st) tree))}))
 
 (defmulti mutate om/dispatch)
 
@@ -75,7 +35,7 @@
 ;;  (println "MUTATE thread/select: " @state)
   (let [swapper (fn [st]
                   (assoc-in
-                   (assoc st :selected/thread [:threads/by-id id])
+                   (assoc st :selected/thread id)
                    [:threads/by-id id :thread/read] true))]
     {:action #(swap! state swapper)}))
 

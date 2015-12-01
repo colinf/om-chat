@@ -14,7 +14,7 @@
   Object
   (render [this]
           (let [{:keys [threads]} (om/props this)]
- ;;           (println "ROOT: " (om/props this))
+;;            (println "ROOT: " (om/props this))
             (dom/div #js{:className "chatapp"}
                      (thread-section/thread-section
                       (om/computed (om/props this)
