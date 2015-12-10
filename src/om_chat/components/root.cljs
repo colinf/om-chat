@@ -9,8 +9,7 @@
 (defui ChatApp
   static om/IQuery
   (query [this]
-         [(om/get-query thread-section/ThreadSection)
-          ])
+         [(om/get-query thread-section/ThreadSection)])
   Object
   (render [this]
           (let [{:keys [threads]} (om/props this)]
